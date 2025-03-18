@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 
 export default function OrdersManagement() {
 	const [activeFilter, setActiveFilter] = useState('all');
-	const [selectedOrder, setSelectedOrder] = useState(null);
+	const [selectedOrder, setSelectedOrder] = useState<any>(null);
 	const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
 	// Mock data for metrics
@@ -117,7 +117,7 @@ export default function OrdersManagement() {
 	const filteredOrders = activeFilter === 'all' ? orders : orders.filter((order) => order.status === activeFilter);
 
 	const handleOrderClick = (order: any) => {
-		setSelectedOrder(order);
+		setSelectedOrder(order as any);
 		setIsOrderDetailsOpen(true);
 	};
 
@@ -321,7 +321,7 @@ export default function OrdersManagement() {
 								<div>
 									<h3 className='font-medium mb-3 dark:text-white'>Productos</h3>
 									<div className='space-y-2'>
-										{selectedOrder.items.map((item, idx) => (
+										{selectedOrder.items.map((item: any, idx: any) => (
 											<div
 												key={idx}
 												className='flex justify-between'
@@ -359,7 +359,7 @@ export default function OrdersManagement() {
 										<div>
 											<h3 className='font-medium mb-3 dark:text-white'>Notas</h3>
 											<div className='space-y-2'>
-												{selectedOrder.notes.map((note, idx) => (
+												{selectedOrder.notes.map((note: any, idx: any) => (
 													<div
 														key={idx}
 														className={`px-3 py-2 rounded-md text-sm ${

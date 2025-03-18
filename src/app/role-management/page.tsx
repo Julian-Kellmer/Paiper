@@ -30,16 +30,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { GiftService } from '(components)/gift-service';
 
-interface Transaction {
-	id: string;
-	// other properties...
-}
-
 export default function RoleManagement() {
 	const [activeTab, setActiveTab] = useState('clientes');
 	const [sortDirection, setSortDirection] = useState('asc');
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedUser, setSelectedUser] = useState(null);
+	const [selectedUser, setSelectedUser] = useState<any>(null);
 	const [activeProfileTab, setActiveProfileTab] = useState('profile');
 	const [isGiftServiceOpen, setIsGiftServiceOpen] = useState(false);
 
@@ -477,8 +472,8 @@ export default function RoleManagement() {
 									<div className='flex items-center space-x-4'>
 										<Avatar className='h-20 w-20'>
 											<AvatarImage
-											src={selectedUser.avatar}
-											alt={selectedUser.name}
+												src={selectedUser.avatar}
+												alt={selectedUser.name}
 											/>
 
 											<AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
@@ -486,8 +481,7 @@ export default function RoleManagement() {
 										<div>
 											<h3 className='text-lg font-medium dark:text-white'>{/* {selectedUser.name} */}</h3>
 											<p className='text-sm text-muted-foreground dark:text-gray-400'>
-												{selectedUser.type} • Miembro desde{" "}
-												{selectedUser.joinDate}
+												{selectedUser.type} • Miembro desde {selectedUser.joinDate}
 											</p>
 										</div>
 									</div>
@@ -580,39 +574,39 @@ export default function RoleManagement() {
 									</div>
 
 									{/* {selectedUser.type.includes('Cliente') && ( */}
-										<>
-											<Separator className='my-4' />
-											<div className='space-y-4'>
-												<h3 className='text-lg font-medium dark:text-white'>Información Financiera</h3>
-												<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-													<div className='space-y-2'>
-														<Label
-															htmlFor='balance'
-															className='dark:text-gray-300'>
-															<DollarSignIcon className='h-4 w-4 inline mr-2' />
-															Saldo Actual
-														</Label>
-														<Input
-															// defaultValue={selectedUser.balance.replace('S/ ', '')}
-															className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
-														/>
-													</div>
-													<div className='space-y-2'>
-														<Label
-															htmlFor='spent'
-															className='dark:text-gray-300'>
-															<CreditCardIcon className='h-4 w-4 inline mr-2' />
-															Total Gastado
-														</Label>
-														<Input
-															// defaultValue={selectedUser.spent.replace('S/ ', '')}
-															disabled
-															className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
-														/>
-													</div>
+									<>
+										<Separator className='my-4' />
+										<div className='space-y-4'>
+											<h3 className='text-lg font-medium dark:text-white'>Información Financiera</h3>
+											<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+												<div className='space-y-2'>
+													<Label
+														htmlFor='balance'
+														className='dark:text-gray-300'>
+														<DollarSignIcon className='h-4 w-4 inline mr-2' />
+														Saldo Actual
+													</Label>
+													<Input
+														// defaultValue={selectedUser.balance.replace('S/ ', '')}
+														className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
+													/>
+												</div>
+												<div className='space-y-2'>
+													<Label
+														htmlFor='spent'
+														className='dark:text-gray-300'>
+														<CreditCardIcon className='h-4 w-4 inline mr-2' />
+														Total Gastado
+													</Label>
+													<Input
+														// defaultValue={selectedUser.spent.replace('S/ ', '')}
+														disabled
+														className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
+													/>
 												</div>
 											</div>
-										</>
+										</div>
+									</>
 									{/* )} */}
 								</TabsContent>
 
@@ -620,96 +614,96 @@ export default function RoleManagement() {
 									value='transactions'
 									className='mt-4'>
 									{/* {selectedUser.transactions && selectedUser.transactions.length > 0 ? ( */}
-										<div className='space-y-4'>
-											<div className='flex items-center justify-between'>
-												<h3 className='text-lg font-medium dark:text-white'>Historial de Transacciones</h3>
-												<div className='flex items-center space-x-2'>
-													<CalendarIcon className='h-4 w-4 text-muted-foreground' />
+									<div className='space-y-4'>
+										<div className='flex items-center justify-between'>
+											<h3 className='text-lg font-medium dark:text-white'>Historial de Transacciones</h3>
+											<div className='flex items-center space-x-2'>
+												<CalendarIcon className='h-4 w-4 text-muted-foreground' />
 
-													<span className='text-sm text-muted-foreground dark:text-gray-400'>Últimos 3 meses</span>
-												</div>
-											</div>
-
-											<div className='border rounded-lg overflow-hidden dark:border-gray-700'>
-												<table className='w-full'>
-													<thead className='bg-muted/50 dark:bg-gray-800 text-left'>
-														<tr>
-															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>ID</th>
-															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Fecha</th>
-															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Tipo</th>
-															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Método</th>
-															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Monto</th>
-															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Estado</th>
-														</tr>
-													</thead>
-													<tbody>
-														{selectedUser?.transactions?.map((transaction: Transaction, index: number) => (
-															<tr
-																key={transaction.id}
-																className='border-t dark:border-gray-700 hover:bg-muted/50 dark:hover:bg-gray-800/50'
-																id={`9nikes_${index}`}>
-																<td
-																	className='p-3 dark:text-white'
-																	id={`ecipm8_${index}`}>
-																	{transaction.id}
-																</td>
-																<td
-																	className='p-3 dark:text-white'
-																	id={`eixv92_${index}`}>
-																	{new Date(transaction.date).toLocaleDateString('es-ES')}
-																</td>
-																<td
-																	className='p-3 dark:text-white'
-																	id={`b1hxao_${index}`}>
-																	<Badge
-																		className={
-																			transaction.type === 'Compra'
-																				? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-																				: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-																		}
-																		id={`igek41_${index}`}>
-																		{transaction.type}
-																	</Badge>
-																</td>
-																<td
-																	className='p-3 dark:text-white'
-																	id={`j75e4l_${index}`}>
-																	<div
-																		className='flex items-center'
-																		id={`s2wq8f_${index}`}>
-																		{getMethodIcon(transaction.method)}
-																		{transaction.method}
-																	</div>
-																</td>
-																<td
-																	className='p-3 font-medium dark:text-white'
-																	id={`47e8yp_${index}`}>
-																	{transaction.amount}
-																</td>
-																<td
-																	className='p-3'
-																	id={`ki5886_${index}`}>
-																	<Badge
-																		className={
-																			transaction.status === 'Completada'
-																				? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-																				: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-																		}
-																		id={`siydzg_${index}`}>
-																		{transaction.status}
-																	</Badge>
-																</td>
-															</tr>
-														))}
-													</tbody>
-												</table>
+												<span className='text-sm text-muted-foreground dark:text-gray-400'>Últimos 3 meses</span>
 											</div>
 										</div>
-									) : (
+
+										<div className='border rounded-lg overflow-hidden dark:border-gray-700'>
+											<table className='w-full'>
+												<thead className='bg-muted/50 dark:bg-gray-800 text-left'>
+													<tr>
+														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>ID</th>
+														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Fecha</th>
+														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Tipo</th>
+														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Método</th>
+														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Monto</th>
+														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Estado</th>
+													</tr>
+												</thead>
+												<tbody>
+													{selectedUser?.transactions?.map((transaction: any, index: number) => (
+														<tr
+															key={transaction.id}
+															className='border-t dark:border-gray-700 hover:bg-muted/50 dark:hover:bg-gray-800/50'
+															id={`9nikes_${index}`}>
+															<td
+																className='p-3 dark:text-white'
+																id={`ecipm8_${index}`}>
+																{transaction.id}
+															</td>
+															<td
+																className='p-3 dark:text-white'
+																id={`eixv92_${index}`}>
+																{new Date(transaction.date).toLocaleDateString('es-ES')}
+															</td>
+															<td
+																className='p-3 dark:text-white'
+																id={`b1hxao_${index}`}>
+																<Badge
+																	className={
+																		transaction.type === 'Compra'
+																			? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+																			: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+																	}
+																	id={`igek41_${index}`}>
+																	{transaction.type}
+																</Badge>
+															</td>
+															<td
+																className='p-3 dark:text-white'
+																id={`j75e4l_${index}`}>
+																<div
+																	className='flex items-center'
+																	id={`s2wq8f_${index}`}>
+																	{getMethodIcon(transaction.method)}
+																	{transaction.method}
+																</div>
+															</td>
+															<td
+																className='p-3 font-medium dark:text-white'
+																id={`47e8yp_${index}`}>
+																{transaction.amount}
+															</td>
+															<td
+																className='p-3'
+																id={`ki5886_${index}`}>
+																<Badge
+																	className={
+																		transaction.status === 'Completada'
+																			? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+																			: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+																	}
+																	id={`siydzg_${index}`}>
+																	{transaction.status}
+																</Badge>
+															</td>
+														</tr>
+													))}
+												</tbody>
+											</table>
+										</div>
+									</div>
+									{/* ) : (
 										<div className='text-center py-8'>
 											<p className='text-muted-foreground dark:text-gray-400'>No hay transacciones disponibles para este usuario.</p>
 										</div>
-									)} 
+									)} */}
 								</TabsContent>
 							</Tabs>
 
