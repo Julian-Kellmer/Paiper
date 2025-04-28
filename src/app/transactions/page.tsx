@@ -5,6 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { SearchIcon, FilterIcon, RefreshCwIcon, CalendarIcon, ArrowUpDownIcon, CreditCardIcon, DollarSignIcon, WalletIcon } from 'lucide-react';
+import { UserTransaction } from '@/types/types';
+
+interface Transaction {
+	id: number;
+	usuario: string;
+	userId: string;
+	orden: string;
+	metodo: string;
+	fecha: string;
+	monto: string;
+	estado: string;
+}
 
 export default function Transactions() {
 	const [searchQuery, setSearchQuery] = useState('');
@@ -12,7 +24,7 @@ export default function Transactions() {
 	const [sortDirection, setSortDirection] = useState('desc');
 
 	// Mock data for transactions
-	const transactions = [
+	const transactions: Transaction[] = [
 		{
 			id: 1,
 			usuario: 'Carlos Méndez',
@@ -112,7 +124,7 @@ export default function Transactions() {
 		}
 
 		// Apply sorting
-		return filteredTransactions.sort((a: any, b: any) => {
+		return filteredTransactions.sort((a: Transaction, b: Transaction) => {
 			let valueA, valueB;
 
 			switch (sortField) {
@@ -137,8 +149,8 @@ export default function Transactions() {
 					valueB = parseFloat(b.monto.replace('$', ''));
 					break;
 				default:
-					valueA = a[sortField as keyof typeof a];
-					valueB = b[sortField as keyof typeof b];
+					valueA = a[sortField as keyof Transaction];
+					valueB = b[sortField as keyof Transaction];
 			}
 
 			if (valueA < valueB) {

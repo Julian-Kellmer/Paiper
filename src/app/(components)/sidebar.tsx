@@ -55,16 +55,6 @@ export function Sidebar({ currentPage, setCurrentPage }: SidebarProps) {
 					</Button>
 				))}
 			</nav>
-
-			{/* New Order Button in Sidebar */}
-			<div className='p-4 border-t dark:border-gray-800'>
-				<Button
-					className='w-full bg-green-600 hover:bg-green-700 flex items-center justify-center'
-					onClick={handleNewOrderClick}>
-					<PlusIcon className='mr-2 h-4 w-4' />
-					Nueva Orden
-				</Button>
-			</div>
 		</div>
 	);
 }

@@ -29,23 +29,27 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { GiftService } from '(components)/gift-service';
+import { User, UserTransaction } from '@/types/types';
+
+type TabType = 'clientes' | 'equipoPublicas' | 'clientesVIP' | 'equipo';
+type SortDirection = 'asc' | 'desc';
 
 export default function RoleManagement() {
-	const [activeTab, setActiveTab] = useState('clientes');
-	const [sortDirection, setSortDirection] = useState('asc');
+	const [activeTab, setActiveTab] = useState<TabType>('clientes');
+	const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedUser, setSelectedUser] = useState<any>(null);
-	const [activeProfileTab, setActiveProfileTab] = useState('profile');
+	const [selectedUser, setSelectedUser] = useState<User | null>(null);
+	const [activeProfileTab, setActiveProfileTab] = useState<'profile' | 'transactions'>('profile');
 	const [isGiftServiceOpen, setIsGiftServiceOpen] = useState(false);
 
 	// Mock data for users
-	const users = [
+	const users: User[] = [
 		{
 			id: 1,
 			name: 'Alex Johnson',
 			email: 'alex@example.com',
 			avatar: 'https://github.com/yusufhilmi.png',
-			type: 'Cliente',
+			type: 'client',
 			status: 'active',
 			balance: 'S/ 1,500.00',
 			spent: 'S/ 500.00',
@@ -92,7 +96,7 @@ export default function RoleManagement() {
 			name: 'María García',
 			email: 'maria@example.com',
 			avatar: 'https://github.com/furkanksl.png',
-			type: 'Equipo',
+			type: 'master',
 			status: 'active',
 			balance: '',
 			spent: '',
@@ -106,7 +110,7 @@ export default function RoleManagement() {
 			name: 'Carlos Rodríguez',
 			email: 'carlos@example.com',
 			avatar: 'https://github.com/polymet-ai.png',
-			type: 'Cliente VIP',
+			type: 'client',
 			status: 'active',
 			balance: 'S/ 3,200.00',
 			spent: 'S/ 1,800.00',
@@ -137,7 +141,7 @@ export default function RoleManagement() {
 			name: 'Laura Martínez',
 			email: 'laura@example.com',
 			avatar: 'https://github.com/furkanksl.png',
-			type: 'Equipo Publicas',
+			type: 'admin',
 			status: 'inactive',
 			balance: '',
 			spent: '',
@@ -151,7 +155,7 @@ export default function RoleManagement() {
 			name: 'Pedro Sánchez',
 			email: 'pedro@example.com',
 			avatar: 'https://github.com/yusufhilmi.png',
-			type: 'Cliente',
+			type: 'client',
 			status: 'active',
 			balance: 'S/ 750.00',
 			spent: 'S/ 320.00',
@@ -191,13 +195,13 @@ export default function RoleManagement() {
 	const filteredUsers = users.filter((user) => {
 		switch (activeTab) {
 			case 'clientes':
-				return user.type === 'Cliente';
+				return user.type === 'client';
 			case 'equipoPublicas':
-				return user.type === 'Equipo Publicas';
+				return user.type === 'barman';
 			case 'clientesVIP':
-				return user.type === 'Cliente VIP';
+				return user.type === 'client';
 			case 'equipo':
-				return user.type === 'Equipo';
+				return user.type === 'master';
 			default:
 				return true;
 		}
@@ -207,17 +211,17 @@ export default function RoleManagement() {
 		setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
 	};
 
-	const handleEditUser = (user: any) => {
+	const handleEditUser = (user: User) => {
 		setSelectedUser(user);
 		setIsEditDialogOpen(true);
 	};
 
-	const handleSendGift = (user: any) => {
+	const handleSendGift = (user: User) => {
 		setSelectedUser(user);
 		setIsGiftServiceOpen(true);
 	};
 
-	const getMethodIcon = (method: any) => {
+	const getMethodIcon = (method: UserTransaction['method']) => {
 		switch (method) {
 			case 'Tarjeta':
 				return <CreditCardIcon className='h-4 w-4 mr-2' />;
@@ -444,15 +448,19 @@ export default function RoleManagement() {
 					{selectedUser && (
 						<>
 							<DialogHeader>
-								<DialogTitle className='text-xl'>Editar Usuario: {selectedUser}</DialogTitle>
+								<DialogTitle className='text-xl'>Editar Usuario: {selectedUser.name}</DialogTitle>
 								<DialogDescription>Actualiza la información del usuario y visualiza su historial de transacciones</DialogDescription>
 							</DialogHeader>
 
 							<Tabs
 								defaultValue='profile'
 								value={activeProfileTab}
-								onValueChange={setActiveProfileTab}
-								className='mt-4'>
+								onValueChange={(value: string) => {
+									if (value === 'profile' || value === 'transactions') {
+										setActiveProfileTab(value);
+									}
+								}}
+								className='w-full'>
 								<TabsList className='grid w-full grid-cols-2 dark:bg-gray-800'>
 									<TabsTrigger
 										value='profile'
@@ -479,7 +487,7 @@ export default function RoleManagement() {
 											<AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
 										</Avatar>
 										<div>
-											<h3 className='text-lg font-medium dark:text-white'>{/* {selectedUser.name} */}</h3>
+											<h3 className='text-lg font-medium dark:text-white'>{selectedUser.name}</h3>
 											<p className='text-sm text-muted-foreground dark:text-gray-400'>
 												{selectedUser.type} • Miembro desde {selectedUser.joinDate}
 											</p>
@@ -497,7 +505,7 @@ export default function RoleManagement() {
 												Nombre Completo
 											</Label>
 											<Input
-												// defaultValue={selectedUser.name}
+												defaultValue={selectedUser.name}
 												className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
 											/>
 										</div>
@@ -509,7 +517,7 @@ export default function RoleManagement() {
 												Correo Electrónico
 											</Label>
 											<Input
-												// defaultValue={selectedUser.email}
+												defaultValue={selectedUser.email}
 												className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
 											/>
 										</div>
@@ -521,7 +529,7 @@ export default function RoleManagement() {
 												Teléfono
 											</Label>
 											<Input
-												// defaultValue={selectedUser.phone}
+												defaultValue={selectedUser.phone}
 												className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
 											/>
 										</div>
@@ -533,7 +541,7 @@ export default function RoleManagement() {
 												Dirección
 											</Label>
 											<Input
-												// defaultValue={selectedUser.address}
+												defaultValue={selectedUser.address}
 												className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
 											/>
 										</div>
@@ -562,148 +570,148 @@ export default function RoleManagement() {
 												Estado
 											</Label>
 											<div className='flex items-center space-x-2 pt-2'>
-												{/* <Switch checked={selectedUser.status === 'active'} /> */}
+												<Switch checked={selectedUser.status === 'active'} />
 
 												<Label
 													htmlFor='status'
 													className='dark:text-gray-300'>
-													{/* {selectedUser.status === 'active' ? 'Activo' : 'Inactivo'} */}
+													{selectedUser.status === 'active' ? 'Activo' : 'Inactivo'}
 												</Label>
 											</div>
 										</div>
 									</div>
 
-									{/* {selectedUser.type.includes('Cliente') && ( */}
-									<>
-										<Separator className='my-4' />
-										<div className='space-y-4'>
-											<h3 className='text-lg font-medium dark:text-white'>Información Financiera</h3>
-											<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-												<div className='space-y-2'>
-													<Label
-														htmlFor='balance'
-														className='dark:text-gray-300'>
-														<DollarSignIcon className='h-4 w-4 inline mr-2' />
-														Saldo Actual
-													</Label>
-													<Input
-														// defaultValue={selectedUser.balance.replace('S/ ', '')}
-														className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
-													/>
-												</div>
-												<div className='space-y-2'>
-													<Label
-														htmlFor='spent'
-														className='dark:text-gray-300'>
-														<CreditCardIcon className='h-4 w-4 inline mr-2' />
-														Total Gastado
-													</Label>
-													<Input
-														// defaultValue={selectedUser.spent.replace('S/ ', '')}
-														disabled
-														className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
-													/>
+									{selectedUser.type.includes('Cliente') && (
+										<>
+											<Separator className='my-4' />
+											<div className='space-y-4'>
+												<h3 className='text-lg font-medium dark:text-white'>Información Financiera</h3>
+												<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+													<div className='space-y-2'>
+														<Label
+															htmlFor='balance'
+															className='dark:text-gray-300'>
+															<DollarSignIcon className='h-4 w-4 inline mr-2' />
+															Saldo Actual
+														</Label>
+														<Input
+															defaultValue={selectedUser.balance.replace('S/ ', '')}
+															className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
+														/>
+													</div>
+													<div className='space-y-2'>
+														<Label
+															htmlFor='spent'
+															className='dark:text-gray-300'>
+															<CreditCardIcon className='h-4 w-4 inline mr-2' />
+															Total Gastado
+														</Label>
+														<Input
+															defaultValue={selectedUser.spent.replace('S/ ', '')}
+															disabled
+															className='dark:bg-gray-800 dark:border-gray-700 dark:text-white'
+														/>
+													</div>
 												</div>
 											</div>
-										</div>
-									</>
-									{/* )} */}
+										</>
+									)}
 								</TabsContent>
 
 								<TabsContent
 									value='transactions'
 									className='mt-4'>
-									{/* {selectedUser.transactions && selectedUser.transactions.length > 0 ? ( */}
-									<div className='space-y-4'>
-										<div className='flex items-center justify-between'>
-											<h3 className='text-lg font-medium dark:text-white'>Historial de Transacciones</h3>
-											<div className='flex items-center space-x-2'>
-												<CalendarIcon className='h-4 w-4 text-muted-foreground' />
+									{selectedUser.transactions && selectedUser.transactions.length > 0 ? (
+										<div className='space-y-4'>
+											<div className='flex items-center justify-between'>
+												<h3 className='text-lg font-medium dark:text-white'>Historial de Transacciones</h3>
+												<div className='flex items-center space-x-2'>
+													<CalendarIcon className='h-4 w-4 text-muted-foreground' />
 
-												<span className='text-sm text-muted-foreground dark:text-gray-400'>Últimos 3 meses</span>
+													<span className='text-sm text-muted-foreground dark:text-gray-400'>Últimos 3 meses</span>
+												</div>
+											</div>
+
+											<div className='border rounded-lg overflow-hidden dark:border-gray-700'>
+												<table className='w-full'>
+													<thead className='bg-muted/50 dark:bg-gray-800 text-left'>
+														<tr>
+															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>ID</th>
+															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Fecha</th>
+															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Tipo</th>
+															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Método</th>
+															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Monto</th>
+															<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Estado</th>
+														</tr>
+													</thead>
+													<tbody>
+														{selectedUser.transactions.map((transaction: UserTransaction, index: number) => (
+															<tr
+																key={transaction.id}
+																className='border-t dark:border-gray-700 hover:bg-muted/50 dark:hover:bg-gray-800/50'
+																id={`9nikes_${index}`}>
+																<td
+																	className='p-3 dark:text-white'
+																	id={`ecipm8_${index}`}>
+																	{transaction.id}
+																</td>
+																<td
+																	className='p-3 dark:text-white'
+																	id={`eixv92_${index}`}>
+																	{new Date(transaction.date).toLocaleDateString('es-ES')}
+																</td>
+																<td
+																	className='p-3 dark:text-white'
+																	id={`b1hxao_${index}`}>
+																	<Badge
+																		className={
+																			transaction.type === 'Compra'
+																				? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+																				: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+																		}
+																		id={`igek41_${index}`}>
+																		{transaction.type}
+																	</Badge>
+																</td>
+																<td
+																	className='p-3 dark:text-white'
+																	id={`j75e4l_${index}`}>
+																	<div
+																		className='flex items-center'
+																		id={`s2wq8f_${index}`}>
+																		{getMethodIcon(transaction.method)}
+																		{transaction.method}
+																	</div>
+																</td>
+																<td
+																	className='p-3 font-medium dark:text-white'
+																	id={`47e8yp_${index}`}>
+																	{transaction.amount}
+																</td>
+																<td
+																	className='p-3'
+																	id={`ki5886_${index}`}>
+																	<Badge
+																		className={
+																			transaction.status === 'Completada'
+																				? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+																				: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+																		}
+																		id={`siydzg_${index}`}>
+																		{transaction.status}
+																	</Badge>
+																</td>
+															</tr>
+														))}
+													</tbody>
+												</table>
 											</div>
 										</div>
-
-										<div className='border rounded-lg overflow-hidden dark:border-gray-700'>
-											<table className='w-full'>
-												<thead className='bg-muted/50 dark:bg-gray-800 text-left'>
-													<tr>
-														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>ID</th>
-														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Fecha</th>
-														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Tipo</th>
-														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Método</th>
-														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Monto</th>
-														<th className='p-3 font-medium text-muted-foreground dark:text-gray-400'>Estado</th>
-													</tr>
-												</thead>
-												<tbody>
-													{selectedUser?.transactions?.map((transaction: any, index: number) => (
-														<tr
-															key={transaction.id}
-															className='border-t dark:border-gray-700 hover:bg-muted/50 dark:hover:bg-gray-800/50'
-															id={`9nikes_${index}`}>
-															<td
-																className='p-3 dark:text-white'
-																id={`ecipm8_${index}`}>
-																{transaction.id}
-															</td>
-															<td
-																className='p-3 dark:text-white'
-																id={`eixv92_${index}`}>
-																{new Date(transaction.date).toLocaleDateString('es-ES')}
-															</td>
-															<td
-																className='p-3 dark:text-white'
-																id={`b1hxao_${index}`}>
-																<Badge
-																	className={
-																		transaction.type === 'Compra'
-																			? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-																			: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-																	}
-																	id={`igek41_${index}`}>
-																	{transaction.type}
-																</Badge>
-															</td>
-															<td
-																className='p-3 dark:text-white'
-																id={`j75e4l_${index}`}>
-																<div
-																	className='flex items-center'
-																	id={`s2wq8f_${index}`}>
-																	{getMethodIcon(transaction.method)}
-																	{transaction.method}
-																</div>
-															</td>
-															<td
-																className='p-3 font-medium dark:text-white'
-																id={`47e8yp_${index}`}>
-																{transaction.amount}
-															</td>
-															<td
-																className='p-3'
-																id={`ki5886_${index}`}>
-																<Badge
-																	className={
-																		transaction.status === 'Completada'
-																			? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-																			: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-																	}
-																	id={`siydzg_${index}`}>
-																	{transaction.status}
-																</Badge>
-															</td>
-														</tr>
-													))}
-												</tbody>
-											</table>
-										</div>
-									</div>
-									{/* ) : (
+									) : (
 										<div className='text-center py-8'>
 											<p className='text-muted-foreground dark:text-gray-400'>No hay transacciones disponibles para este usuario.</p>
 										</div>
-									)} */}
+									)}
 								</TabsContent>
 							</Tabs>
 

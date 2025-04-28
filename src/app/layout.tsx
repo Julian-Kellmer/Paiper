@@ -10,9 +10,10 @@ import FinancePanel from 'pages/finance-panel';
 import RoleManagement from 'pages/role-management';
 import NewOrder from 'pages/new-order';
 import MenuManagement from 'pages/menu-management';
-import OrderCheckout from 'pages/order-checkout';
 import QrTracking from 'pages/qr-tracking';
 import Head from 'next/head';
+import { AuthProvider } from '@/context/AuthContext';
+// import { AppProps } from 'next/app';
 
 export default function App() {
 	const [currentPage, setCurrentPage] = useState('dashboard');
@@ -30,7 +31,7 @@ export default function App() {
 	return (
 		<html lang='es'>
 			<body>
-				<>
+				
 					<Head>
 						<title>Paiper </title>
 						<link
@@ -39,6 +40,7 @@ export default function App() {
 						/>
 					</Head>
 					<Layout
+						// pageProps={...pageProps}
 						currentPage={currentPage}
 						setCurrentPage={setCurrentPage}
 						onNewOrderClick={handleNewOrderClick}>
@@ -48,13 +50,11 @@ export default function App() {
 						{currentPage === 'roles' && <RoleManagement />}
 						{currentPage === 'menu' && <MenuManagement />}
 						{currentPage === 'new-order' && <NewOrder setCurrentPage={setCurrentPage} />}
-						{currentPage === 'order-checkout' && <OrderCheckout />}
-
 						{currentPage === 'qr-tracking' && <QrTracking />}
 
 						{/* Other pages would be conditionally rendered here */}
 					</Layout>
-				</>
+				
 			</body>
 		</html>
 	);

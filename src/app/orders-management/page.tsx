@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OrderCard } from '(components)/order-card';
@@ -10,14 +10,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { OrderManagement, OrderManagementItem, MetricData, OrderManagementNote } from '@/types/types';
+import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabaseClient';
+import { throws } from 'assert';
 
 export default function OrdersManagement() {
-	const [activeFilter, setActiveFilter] = useState('all');
-	const [selectedOrder, setSelectedOrder] = useState<any>(null);
+	const [activeFilter, setActiveFilter] = useState<OrderManagement['status'] | 'all'>('all');
+	const [selectedOrder, setSelectedOrder] = useState<OrderManagement | null>(null);
 	const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
+	// const [orders, setOrders] = useState<ExtendedOrder[]>([]);
 
 	// Mock data for metrics
-	const metricsData = [
+	const metricsData: MetricData[] = [
 		{
 			id: 'new-orders',
 			title: 'New Orders',
@@ -49,7 +56,7 @@ export default function OrdersManagement() {
 	];
 
 	// Mock data for orders
-	const orders = [
+	const orders: OrderManagement[] = [
 		{
 			id: '#ORD-2025',
 			table: '12',
@@ -66,7 +73,6 @@ export default function OrdersManagement() {
 				{ name: 'Hamburguesa Clásica', quantity: 2, price: 12.0 },
 				{ name: 'Papas Fritas Grande', quantity: 1, price: 6.5 },
 			],
-
 			total: 30.5,
 			notes: [{ type: 'allergy', text: 'Maní' }],
 		},
@@ -86,7 +92,6 @@ export default function OrdersManagement() {
 				{ name: 'Pizza Margherita', quantity: 1, price: 18.0 },
 				{ name: 'Coca-Cola', quantity: 2, price: 3.0 },
 			],
-
 			total: 24.0,
 			notes: [{ type: 'preference', text: 'Sin cebolla' }],
 		},
@@ -107,7 +112,6 @@ export default function OrdersManagement() {
 				{ name: 'Pollo a la Parrilla', quantity: 1, price: 15.0 },
 				{ name: 'Agua Mineral', quantity: 1, price: 2.5 },
 			],
-
 			total: 27.5,
 			notes: [],
 		},
@@ -116,12 +120,12 @@ export default function OrdersManagement() {
 	// Filter orders based on active filter
 	const filteredOrders = activeFilter === 'all' ? orders : orders.filter((order) => order.status === activeFilter);
 
-	const handleOrderClick = (order: any) => {
-		setSelectedOrder(order as any);
+	const handleOrderClick = (order: OrderManagement) => {
+		setSelectedOrder(order);
 		setIsOrderDetailsOpen(true);
 	};
 
-	const getStatusBadge = (status: string) => {
+	const getStatusBadge = (status: OrderManagement['status']) => {
 		switch (status) {
 			case 'new':
 				return <Badge className='bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'>Nuevo</Badge>;
@@ -139,6 +143,120 @@ export default function OrdersManagement() {
 				return <Badge className='bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'>{status}</Badge>;
 		}
 	};
+	
+	// useEffect(() => {
+	// 	const fetchOrders = async () => {
+	// 		try {
+	// 			setIsLoading(true);
+	// 			setError(null);
+
+	// 			// Fetch orders with their items
+	// 			const { data: ordersData, error: ordersError } = await supabase
+	// 				.from('orders')
+	// 				.select(
+	// 					`
+	// 					*,
+	// 					order_items (
+	// 						id,
+	// 						product_id,
+	// 						quantity,
+	// 						unit_price,
+	// 						products (
+	// 							name,
+	// 							image_url
+	// 						)
+	// 					)
+	// 				`
+	// 				)
+	// 				.order('created_at', { ascending: false })
+	// 				.limit(10);
+
+	// 			if (ordersError) throw ordersError;
+
+				// Transform the data to match our component's expected format
+				// const transformedOrders: ExtendedOrder[] = ordersData.map((order) => {
+					// Get customer info if available
+					// const customer: Customer = order.user_id
+	// 					? {
+	// 							name: order.user_name || 'Unknown User',
+	// 							code: `#${order.user_id.substring(0, 4)}`,
+	// 							avatar: order.user_avatar || 'https://github.com/shadcn.png',
+	// 					  }
+	// 					: {
+	// 							name: 'Anonymous Customer',
+	// 							code: '#ANON',
+	// 							avatar: 'https://github.com/shadcn.png',
+	// 					  };
+
+	// 				// Transform order items
+	// 				const orderItems: ExtendedOrderItem[] = order.order_items.map(
+	// 					(item: {
+	// 						id: number;
+	// 						product_id: number;
+	// 						quantity: number;
+	// 						unit_price: number;
+	// 						products?: {
+	// 							name: string;
+	// 							image_url?: string;
+	// 						};
+	// 					}) => ({
+	// 						id: item.id,
+	// 						product_id: item.product_id,
+	// 						quantity: item.quantity,
+	// 						unit_price: item.unit_price,
+	// 						name: item.products?.name || 'Unknown Product',
+	// 						price: item.unit_price,
+	// 					})
+	// 				);
+
+	// 				// Calculate total
+	// 				const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+	// 				// Format times
+	// 				const orderTime = new Date(order.created_at);
+	// 				const deliveryTime = new Date(order.created_at);
+	// 				deliveryTime.setMinutes(deliveryTime.getMinutes() + 30); // Assume 30 min delivery time
+
+	// 				// Determine if order is delayed
+	// 				const now = new Date();
+	// 				const isDelayed = order.status === 'pending' && now > deliveryTime;
+
+	// 				// Create notes array
+	// 				const notes: Note[] = [];
+	// 				if (order.notes) {
+	// 					notes.push({ type: 'preference', text: order.notes });
+	// 				}
+
+	// 				return {
+	// 					id: order.id,
+	// 					name: order.user_name,
+	// 					table: order.table_number || 'N/A',
+	// 					status: isDelayed ? 'delayed' : order.status,
+	// 					items: orderItems.length,
+	// 					time: orderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+	// 					timeExtra: isDelayed ? '+15min' : undefined,
+	// 					customer,
+	// 					paymentStatus: order.payment_status || 'Pendiente',
+	// 					paymentMethod: order.payment_method || 'MercadoLibre',
+	// 					orderTime: orderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+	// 					deliveryTime: deliveryTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+	// 					orderItems,
+	// 					total,
+	// 					notes,
+	// 				};
+	// 			});
+
+	// 			setOrders(transformedOrders);
+	// 		} catch (err) {
+	// 			console.error('Error fetching orders:', err);
+	// 			setError('Error loading orders');
+	// 		} finally {
+	// 			setIsLoading(false);
+	// 		}
+	// 	};
+
+	// 	fetchOrders();
+	// }, []);
 
 	return (
 		<div className='space-y-6'>
@@ -321,7 +439,7 @@ export default function OrdersManagement() {
 								<div>
 									<h3 className='font-medium mb-3 dark:text-white'>Productos</h3>
 									<div className='space-y-2'>
-										{selectedOrder.items.map((item: any, idx: any) => (
+										{selectedOrder.items.map((item: OrderManagementItem, idx: number) => (
 											<div
 												key={idx}
 												className='flex justify-between'
@@ -359,7 +477,7 @@ export default function OrdersManagement() {
 										<div>
 											<h3 className='font-medium mb-3 dark:text-white'>Notas</h3>
 											<div className='space-y-2'>
-												{selectedOrder.notes.map((note: any, idx: any) => (
+												{selectedOrder.notes.map((note: OrderManagementNote, idx: number) => (
 													<div
 														key={idx}
 														className={`px-3 py-2 rounded-md text-sm ${

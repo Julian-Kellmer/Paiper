@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCardIcon, DollarSignIcon, WalletIcon, XIcon, CheckIcon, UserIcon, SearchIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { User } from '@/types/types';
 
 interface BalanceFormProps {
 	onClose: () => void;
@@ -18,31 +19,52 @@ export function BalanceForm({ onClose }: BalanceFormProps) {
 	const [amount, setAmount] = useState('');
 	const [paymentMethod, setPaymentMethod] = useState('');
 	const [searchQuery, setSearchQuery] = useState('');
-	const [selectedUser, setSelectedUser] = useState<any | null>(null);
+	const [selectedUser, setSelectedUser] = useState<User | undefined>();
 	const [step, setStep] = useState(1);
 
 	// Mock users data
-	const users = [
+	const users: User[] = [
 		{
 			id: 1,
 			name: 'Carlos Ruiz',
 			email: 'carlos@example.com',
 			avatar: 'https://github.com/yusufhilmi.png',
-			balance: '$1,500.00',
+			type: 'Cliente',
+			status: 'active',
+			balance: 'S/ 1,500.00',
+			spent: 'S/ 500.00',
+			phone: '+51 987 654 321',
+			address: 'Av. Principal 123, Lima',
+			joinDate: '15/03/2022',
+			transactions: [],
 		},
 		{
 			id: 2,
 			name: 'Ana Martinez',
 			email: 'ana@example.com',
 			avatar: 'https://github.com/furkanksl.png',
-			balance: '$750.50',
+			type: 'Cliente VIP',
+			status: 'active',
+			balance: 'S/ 750.50',
+			spent: 'S/ 250.00',
+			phone: '+51 912 345 678',
+			address: 'Calle Secundaria 456, Lima',
+			joinDate: '20/05/2022',
+			transactions: [],
 		},
 		{
 			id: 3,
 			name: 'Miguel Sánchez',
 			email: 'miguel@example.com',
 			avatar: 'https://github.com/polymet-ai.png',
-			balance: '$3,200.00',
+			type: 'Cliente',
+			status: 'active',
+			balance: 'S/ 3,200.00',
+			spent: 'S/ 1,200.00',
+			phone: '+51 945 678 123',
+			address: 'Jr. Los Pinos 789, Lima',
+			joinDate: '10/01/2022',
+			transactions: [],
 		},
 	];
 
@@ -78,7 +100,7 @@ export function BalanceForm({ onClose }: BalanceFormProps) {
 	};
 
 	const handleReset = () => {
-		setSelectedUser(null);
+		setSelectedUser(undefined);
 		setAmount('');
 		setPaymentMethod('');
 		setSearchQuery('');
@@ -294,7 +316,7 @@ export function BalanceForm({ onClose }: BalanceFormProps) {
 						</div>
 						<div className='flex justify-between items-center mt-2'>
 							<span className='text-sm text-muted-foreground dark:text-gray-400'>Nuevo saldo:</span>
-							<span className='font-medium dark:text-white'>${parseFloat(selectedUser?.balance.replace(/[^0-9.-]+/g, '')) + parseFloat(amount || '0')}</span>
+							<span className='font-medium dark:text-white'>${selectedUser?.balance}</span>
 						</div>
 					</div>
 				</div>

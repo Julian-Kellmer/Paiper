@@ -1,27 +1,75 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangleIcon, ShoppingCartIcon } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { Product } from '@/types/types';
 
 export function AlertSection() {
-	// Mock data for alerts
-	const lowStockItems = [
-		{ id: 2, name: 'Ron', type: 'botella', stock: 2, unit: 'unidades' },
-		{ id: 5, name: 'Jugo de Naranja', type: 'insumo', stock: 500, unit: 'ml' },
-		{ id: 7, name: 'Menta', type: 'insumo', stock: 10, unit: 'hojas' },
-	];
+	const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
+	const [outOfStockItems, setOutOfStockItems] = useState<Product[]>([]);
+	const [affectedProducts, setAffectedProducts] = useState<any[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-	const outOfStockItems = [{ id: 3, name: 'Tequila', type: 'botella', stock: 0, unit: 'unidades' }];
+	useEffect(() => {
+		const fetchProducts = async () => {
+			try {
+				setIsLoading(true);
+				setError(null);
 
-	// Mock data for affected elaborated products
-	const affectedProducts = [{ id: 2, name: 'Margarita', affectedBy: ['Tequila'] }];
+				// Fetch all products
+				const { data: products, error: productsError } = await supabase.from('products').select('*').order('stock', { ascending: true });
+
+				if (productsError) throw productsError;
+
+				// Filter products with low stock (less than 10 units)
+				const lowStock = products.filter((product) => {
+					const stock = parseInt(product.stock);
+					return stock > 0 && stock < 10;
+				});
+
+				// Filter out of stock products
+				const outOfStock = products.filter((product) => {
+					const stock = parseInt(product.stock);
+					return stock === 0;
+				});
+
+				// For affected products, we need to check if any products are used in recipes
+				// This is a simplified version - in a real app, you'd need to check recipe dependencies
+				const affected = [];
+
+				// If there are out of stock items, check if they affect any products
+				if (outOfStock.length > 0) {
+					// This is a simplified example - in a real app, you'd need to check recipe dependencies
+					// For now, we'll just show a message that some products might be affected
+					affected.push({
+						id: 'general',
+						name: 'Productos Elaborados',
+						affectedBy: outOfStock.map((item) => item.name),
+					});
+				}
+
+				setLowStockItems(lowStock);
+				setOutOfStockItems(outOfStock);
+				setAffectedProducts(affected);
+			} catch (err) {
+				console.error('Error fetching products:', err);
+				setError('Error loading product data');
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchProducts();
+	}, []);
 
 	return (
 		<div className='space-y-6'>
-			<Card>
+			<Card className='dark:bg-gray-900 dark:border-gray-800'>
 				<CardHeader className='bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800'>
 					<CardTitle className='text-amber-700 dark:text-amber-400 flex items-center'>
 						<AlertTriangleIcon className='h-5 w-5 mr-2' />
@@ -29,29 +77,24 @@ export function AlertSection() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className='pt-4'>
-					{lowStockItems.length > 0 ? (
+					{isLoading ? (
+						<div className='animate-pulse space-y-3'>
+							<div className='h-10 bg-gray-200 dark:bg-gray-700 rounded'></div>
+							<div className='h-10 bg-gray-200 dark:bg-gray-700 rounded'></div>
+						</div>
+					) : lowStockItems.length > 0 ? (
 						<ul className='space-y-3'>
 							{lowStockItems.map((item, index) => (
 								<li
 									key={item.id}
-									className='flex justify-between items-center'
-									id={`xoudfv_${index}`}>
-									<div id={`vkl98x_${index}`}>
-										<p
-											className='font-medium text-gray-800 dark:text-gray-200'
-											id={`ohjdp1_${index}`}>
-											{item.name}
-										</p>
-										<p
-											className='text-sm text-gray-600 dark:text-gray-400'
-											id={`e44udz_${index}`}>
-											{item.stock} {item.unit} restantes
-										</p>
+									className='flex justify-between items-center'>
+									<div>
+										<p className='font-medium text-gray-800 dark:text-gray-200'>{item.name}</p>
+										<p className='text-sm text-gray-600 dark:text-gray-400'>{item.stock} unidades restantes</p>
 									</div>
 									<Badge
 										variant='outline'
-										className='bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-700'
-										id={`l093pk_${index}`}>
+										className='bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 border-amber-200 dark:border-amber-800'>
 										Bajo
 									</Badge>
 								</li>
@@ -63,7 +106,7 @@ export function AlertSection() {
 				</CardContent>
 			</Card>
 
-			<Card>
+			<Card className='dark:bg-gray-900 dark:border-gray-800'>
 				<CardHeader className='bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-800'>
 					<CardTitle className='text-red-700 dark:text-red-400 flex items-center'>
 						<AlertTriangleIcon className='h-5 w-5 mr-2' />
@@ -71,29 +114,23 @@ export function AlertSection() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className='pt-4'>
-					{outOfStockItems.length > 0 ? (
+					{isLoading ? (
+						<div className='animate-pulse space-y-3'>
+							<div className='h-10 bg-gray-200 dark:bg-gray-700 rounded'></div>
+						</div>
+					) : outOfStockItems.length > 0 ? (
 						<ul className='space-y-3'>
 							{outOfStockItems.map((item, index) => (
 								<li
 									key={item.id}
-									className='flex justify-between items-center'
-									id={`ly8jvi_${index}`}>
-									<div id={`d6w1io_${index}`}>
-										<p
-											className='font-medium text-gray-800 dark:text-gray-200'
-											id={`rfs7o9_${index}`}>
-											{item.name}
-										</p>
-										<p
-											className='text-sm text-gray-600 dark:text-gray-400'
-											id={`bgogdx_${index}`}>
-											{item.stock} {item.unit} restantes
-										</p>
+									className='flex justify-between items-center'>
+									<div>
+										<p className='font-medium text-gray-800 dark:text-gray-200'>{item.name}</p>
+										<p className='text-sm text-gray-600 dark:text-gray-400'>{item.stock} unidades restantes</p>
 									</div>
 									<Badge
 										variant='outline'
-										className='bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-700'
-										id={`b42gkb_${index}`}>
+										className='bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800'>
 										Agotado
 									</Badge>
 								</li>
@@ -106,7 +143,7 @@ export function AlertSection() {
 			</Card>
 
 			{affectedProducts.length > 0 && (
-				<Card>
+				<Card className='dark:bg-gray-900 dark:border-gray-800'>
 					<CardHeader className='bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800'>
 						<CardTitle className='text-purple-700 dark:text-purple-400 flex items-center'>
 							<AlertTriangleIcon className='h-5 w-5 mr-2' />
@@ -118,24 +155,14 @@ export function AlertSection() {
 							{affectedProducts.map((item, index) => (
 								<li
 									key={item.id}
-									className='flex justify-between items-center'
-									id={`87le46_${index}`}>
-									<div id={`24kqhd_${index}`}>
-										<p
-											className='font-medium text-gray-800 dark:text-gray-200'
-											id={`grhq6z_${index}`}>
-											{item.name}
-										</p>
-										<p
-											className='text-sm text-gray-600 dark:text-gray-400'
-											id={`zdia0w_${index}`}>
-											Falta: {item.affectedBy.join(', ')}
-										</p>
+									className='flex justify-between items-center'>
+									<div>
+										<p className='font-medium text-gray-800 dark:text-gray-200'>{item.name}</p>
+										<p className='text-sm text-gray-600 dark:text-gray-400'>Falta: {item.affectedBy.join(', ')}</p>
 									</div>
 									<Badge
 										variant='outline'
-										className='bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-700'
-										id={`csacs6_${index}`}>
+										className='bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 border-purple-200 dark:border-purple-800'>
 										Bloqueado
 									</Badge>
 								</li>
@@ -146,7 +173,7 @@ export function AlertSection() {
 			)}
 
 			<Button
-				className='w-full'
+				className='w-full dark:border-gray-700 dark:text-gray-300'
 				variant='outline'>
 				<ShoppingCartIcon className='h-4 w-4 mr-2' />
 				Reponer Ahora
